@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparing Python to Go, Rust, and JavaScript: Class Instantiation - Thomas Wileman</title>
+    <meta name="description" content="A comparative analysis of class instantiation in Python, Go, Rust, and JavaScript to understand language differences and design philosophies.">
+    <meta name="keywords" content="Python, Go, Rust, JavaScript, programming languages, class instantiation, comparison">
+    <meta name="author" content="Thomas Wileman">
+
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+        .interactive-comparison {
+            margin: 40px 0 120px 0;
+        }
+
+        .language-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 0;
+            border-bottom: 3px solid #e5e5e5;
+        }
+
+        .tab-button {
+            padding: 15px 25px;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            color: #666;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-layout {
+            display: grid;
+            grid-template-rows: auto auto;
+            gap: 0;
+        }
+
+        .explanation-titles {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .titles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .code-explanation-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            position: relative;
+        }
+
+        .code-panel {
+            background: #f8f9fa;
+            padding: 0;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .code-header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .code-display {
+            padding: 20px;
+            overflow: visible;
+        }
+
+        .code-display pre {
+            margin: 0;
+            font-size: 1.1em;
+            line-height: 1.1;
+            color: #2c3e50;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        .code-display code {
+            background: none;
+            padding: 0;
+        }
+
+        .code-line {
+            display: block;
+            padding: 0;
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+
+        .code-line.highlighted {
+            background: rgba(52, 152, 219, 0.15);
+            border-left: 4px solid #3498db;
+            padding-left: 12px;
+            margin-left: -12px;
+            font-weight: 500;
+        }
+
+        /* Syntax highlighting colors */
+        .keyword {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .string {
+            color: #27ae60;
+        }
+
+        .comment {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .function {
+            color: #3498db;
+            font-weight: 500;
+        }
+
+        .type {
+            color: #9b59b6;
+            font-weight: 500;
+        }
+
+        .number {
+            color: #e67e22;
+        }
+
+        .operator {
+            color: #34495e;
+        }
+
+        .variable {
+            color: #2c3e50;
+        }
+
+        .explanation-panel {
+            padding: 20px;
+            background: white;
+            overflow: visible;
+            position: relative;
+        }
+
+        .explanation-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .explanation-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .explanation-panel::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .explanation-panel::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        .explanation-item {
+            padding: 12px 16px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            text-align: center;
+        }
+
+        .explanation-item:hover {
+            background: #e8f4f8;
+            border-color: #3498db;
+        }
+
+        .explanation-item.active {
+            background: #e8f4f8;
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+        }
+
+        .hover-tooltip {
+            position: absolute;
+            background: #2c3e50;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            line-height: 1.4;
+            max-width: 320px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+        }
+
+        .hover-tooltip::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 8px solid transparent;
+        }
+
+        .hover-tooltip.left::before {
+            top: 50%;
+            right: 100%;
+            transform: translateY(-50%);
+            border-right-color: #2c3e50;
+        }
+
+        .hover-tooltip.right::before {
+            top: 50%;
+            left: 100%;
+            transform: translateY(-50%);
+            border-left-color: #2c3e50;
+        }
+
+        .hover-tooltip.top::before {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: #2c3e50;
+        }
+
+        .hover-tooltip.bottom::before {
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: #2c3e50;
+        }
+
+        .hover-tooltip.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .explanation-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+
+        @media (max-width: 768px) {
+            .content-layout {
+                grid-template-rows: auto auto auto;
+                gap: 20px;
+            }
+
+            .code-explanation-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .code-panel {
+                border-right: none;
+                border-bottom: 1px solid #e5e5e5;
+            }
+
+            .tab-button {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+
+            .titles-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Thomas Wileman</h1>
+        <p class="tagline">Machine Learning Engineer & Technical Writer</p>
+        <nav>
+            <a href="../../">Home</a>
+            <a href="../" class="active">Blog</a>
+            <a href="../../about/">About</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="back-link">
+            <a href="../">&larr; Back to Blog</a>
+        </div>
+
+        <article class="content-section">
+            <h1>Comparing Python to Go, Rust, and JavaScript: Class Instantiation</h1>
+            <div class="post-meta">July 20, 2025 • Programming Languages</div>
+
+            <div class="article-content">
+                <p>I've been developing almost exclusively in Python for the past six years, primarily focusing on data engineering and machine learning tasks. While I'm confident in my ability to write effective and reliable Python code, my knowledge tends to be practical and focused on solving specific problems. However, I recognize an opportunity to deepen my theoretical understanding of Python's internals and foundational concepts, particularly when it comes to articulating details about the language's underlying mechanics.</p>
+
+                <p>Part of this stems from my practical, rather than theoretical, approach to Python—I haven't yet invested significant time into mastering its deeper structures and nuances. And a big component of that is I don't have anything to compare Python against. I don't know how Go, Rust, or another language would read in data, transform it, and output a result. I want to change that.</p>
+
+                <p>So for the next few weeks I'm going to look at how Python, Go, Rust, and JavaScript would all solve the same programming tasks. I'll first write that task in each language, make some notes about the syntax used, and then compare the differences between them.</p>
+
+                <p>The first programming task I'm going to examine is class instantiation. Class instantiation is simply the creation of an object. That object will almost certainly have attributes and will usually be instantiated multiple times to handle different versions of the same class.</p>
+
+                <p>We're going to create a class called, "Person". This class will have two attributes, name and age. We'll then instantiate an instance of this class for a 30 year old person named Alice. We'll also give this class a method called Greet which will return, "Hello, I'm Alice".</p>
+
+                <div class="interactive-comparison">
+                    <div class="language-tabs">
+                        <button class="tab-button active" data-tab="python">Python</button>
+                        <button class="tab-button" data-tab="rust">Rust</button>
+                        <button class="tab-button" data-tab="go">Go</button>
+                        <button class="tab-button" data-tab="javascript">JavaScript</button>
+                    </div>
+
+                    <!-- Python Tab -->
+                    <div class="tab-content active" id="python-tab">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="2" data-tooltip="Python uses double underscores (dunders) to identify special methods. __init__ is the constructor method that's automatically called when creating a new instance. The dunders make it clear this is a special method and avoid naming conflicts.">
+                                        <div class="explanation-title">Dunder Methods (__init__)</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="2,5" data-tooltip="Every instance method in Python requires 'self' as the first parameter. This follows Python's 'explicit is better than implicit' philosophy - you always know which object a method belongs to.">
+                                        <div class="explanation-title">The "self" Parameter</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="3,4" data-tooltip="Attributes are set using self.attribute_name. Python doesn't require type declarations, making the syntax clean but potentially less safe.">
+                                        <div class="explanation-title">Instance Attributes</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="6" data-tooltip="Python's f-string syntax provides a clean way to embed variables in strings. The 'f' prefix allows {variable} interpolation.">
+                                        <div class="explanation-title">F-String Formatting</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">Python Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">class</span> <span class="type">Person</span>:</span>
+<span class="code-line" data-line="2">    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, <span class="variable">name</span>, <span class="variable">age</span>):</span>
+<span class="code-line" data-line="3">        <span class="variable">self</span>.<span class="variable">name</span> = <span class="variable">name</span></span>
+<span class="code-line" data-line="4">        <span class="variable">self</span>.<span class="variable">age</span> = <span class="variable">age</span></span>
+<span class="code-line" data-line="5">    <span class="keyword">def</span> <span class="function">greet</span>(<span class="variable">self</span>):</span>
+<span class="code-line" data-line="6">        <span class="keyword">return</span> <span class="string">f"Hello, I'm {self.name}"</span></span>
+<span class="code-line" data-line="7"><span class="variable">person</span> = <span class="type">Person</span>(<span class="string">"Alice"</span>, <span class="number">30</span>)</span>
+<span class="code-line" data-line="8"><span class="function">print</span>(<span class="variable">person</span>.<span class="function">greet</span>())</span></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rust Tab -->
+                    <div class="tab-content" id="rust-tab">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="1,6" data-tooltip="Rust separates data definition (struct) from behavior (impl). This allows you to implement methods in different modules or even add methods to types you don't own.">
+                                        <div class="explanation-title">Struct vs Impl Separation</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="2,3" data-tooltip="Rust requires explicit types for struct fields. String vs &str, u32 for unsigned 32-bit integers. This prevents many runtime errors at compile time.">
+                                        <div class="explanation-title">Explicit Type Declarations</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="7,8" data-tooltip="Rust uses 'new' by convention (not enforced). The shorthand syntax Person { name, age } is equivalent to Person { name: name, age: age }.">
+                                        <div class="explanation-title">Constructor Convention</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="11" data-tooltip="The &self parameter borrows the instance without taking ownership. This is Rust's memory safety in action - the method can read but not move the instance.">
+                                        <div class="explanation-title">Borrowing with &self</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">Rust Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">struct</span> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="2">    <span class="variable">name</span>: <span class="type">String</span>,</span>
+<span class="code-line" data-line="3">    <span class="variable">age</span>: <span class="type">u32</span>,</span>
+<span class="code-line" data-line="4">}</span>
+<span class="code-line" data-line="5"><span class="keyword">impl</span> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="6">    <span class="keyword">fn</span> <span class="function">new</span>(<span class="variable">name</span>: <span class="type">String</span>, <span class="variable">age</span>: <span class="type">u32</span>) -> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="7">        <span class="type">Person</span> { <span class="variable">name</span>, <span class="variable">age</span> }</span>
+<span class="code-line" data-line="8">    }</span>
+<span class="code-line" data-line="9">    <span class="keyword">fn</span> <span class="function">greet</span>(&<span class="variable">self</span>) -> <span class="type">String</span> {</span>
+<span class="code-line" data-line="10">        <span class="function">format!</span>(<span class="string">"Hello, I'm {}"</span>, <span class="variable">self</span>.<span class="variable">name</span>)</span>
+<span class="code-line" data-line="11">    }</span>
+<span class="code-line" data-line="12">}</span>
+<span class="code-line" data-line="13"><span class="keyword">let</span> <span class="variable">person</span> = <span class="type">Person</span>::<span class="function">new</span>(<span class="string">"Alice"</span>.<span class="function">to_string</span>(), <span class="number">30</span>);</span>
+<span class="code-line" data-line="14"><span class="function">println!</span>(<span class="string">"{}"</span>, <span class="variable">person</span>.<span class="function">greet</span>());</span></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Go Tab -->
+                    <div class="tab-content" id="go-tab">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="1" data-tooltip="Every Go file starts with a package declaration. 'package main' means this is an executable program, not a library. Go looks for a main() function as the entry point.">
+                                        <div class="explanation-title">Package Declaration</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="7,8" data-tooltip="The * indicates a pointer type, & gets the memory address. Go requires explicit pointer handling, giving you control over memory layout and performance.">
+                                        <div class="explanation-title">Pointers and Memory</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="13" data-tooltip="Go methods use receiver syntax: (p *Person) attaches the method to the Person type. The receiver comes before the function name.">
+                                        <div class="explanation-title">Method Receivers</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="4,5,7" data-tooltip="Go requires explicit types for all parameters and struct fields. No type inference for function signatures - everything must be stated clearly.">
+                                        <div class="explanation-title">Explicit Typing Everywhere</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">Go Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">package</span> main</span>
+<span class="code-line" data-line="2"><span class="keyword">import</span> <span class="string">"fmt"</span></span>
+<span class="code-line" data-line="3"><span class="keyword">type</span> <span class="type">Person</span> <span class="keyword">struct</span> {</span>
+<span class="code-line" data-line="4">    <span class="variable">Name</span> <span class="type">string</span></span>
+<span class="code-line" data-line="5">    <span class="variable">Age</span>  <span class="type">int</span></span>
+<span class="code-line" data-line="6">}</span>
+<span class="code-line" data-line="7"><span class="keyword">func</span> <span class="function">NewPerson</span>(<span class="variable">name</span> <span class="type">string</span>, <span class="variable">age</span> <span class="type">int</span>) *<span class="type">Person</span> {</span>
+<span class="code-line" data-line="8">    <span class="keyword">return</span> &<span class="type">Person</span>{</span>
+<span class="code-line" data-line="9">        <span class="variable">Name</span>: <span class="variable">name</span>,</span>
+<span class="code-line" data-line="10">        <span class="variable">Age</span>:  <span class="variable">age</span>,</span>
+<span class="code-line" data-line="11">    }</span>
+<span class="code-line" data-line="12">}</span>
+<span class="code-line" data-line="13"><span class="keyword">func</span> (<span class="variable">p</span> *<span class="type">Person</span>) <span class="function">Greet</span>() <span class="type">string</span> {</span>
+<span class="code-line" data-line="14">    <span class="keyword">return</span> <span class="variable">fmt</span>.<span class="function">Sprintf</span>(<span class="string">"Hello, I'm %s"</span>, <span class="variable">p</span>.<span class="variable">Name</span>)</span>
+<span class="code-line" data-line="15">}</span>
+<span class="code-line" data-line="16"><span class="variable">person</span> := <span class="function">NewPerson</span>(<span class="string">"Alice"</span>, <span class="number">30</span>)</span>
+<span class="code-line" data-line="17"><span class="variable">fmt</span>.<span class="function">Println</span>(<span class="variable">person</span>.<span class="function">Greet</span>())</span></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- JavaScript Tab -->
+                    <div class="tab-content" id="javascript-tab">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="2" data-tooltip="JavaScript uses 'constructor' as the special method name instead of Python's __init__. Similar concept, cleaner syntax than Python's dunders.">
+                                        <div class="explanation-title">Constructor Method</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="3,4,7" data-tooltip="JavaScript uses 'this' to refer to the current instance, similar to Python's 'self' but it's automatically bound - you don't need to declare it as a parameter.">
+                                        <div class="explanation-title">Implicit 'this' Context</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="7" data-tooltip="The backticks (`) create template literals, allowing ${variable} interpolation similar to Python's f-strings. More readable than concatenation.">
+                                        <div class="explanation-title">Template Literals</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="2,6" data-tooltip="JavaScript has no compile-time type checking. Parameters and return types are completely dynamic, offering flexibility but less safety than Rust or Go.">
+                                        <div class="explanation-title">No Type Checking</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">JavaScript Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">class</span> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="2">    <span class="function">constructor</span>(<span class="variable">name</span>, <span class="variable">age</span>) {</span>
+<span class="code-line" data-line="3">        <span class="keyword">this</span>.<span class="variable">name</span> = <span class="variable">name</span>;</span>
+<span class="code-line" data-line="4">        <span class="keyword">this</span>.<span class="variable">age</span> = <span class="variable">age</span>;</span>
+<span class="code-line" data-line="5">    }</span>
+<span class="code-line" data-line="6">    <span class="function">greet</span>() {</span>
+<span class="code-line" data-line="7">        <span class="keyword">return</span> <span class="string">`Hello, I'm ${this.name}`</span>;</span>
+<span class="code-line" data-line="8">    }</span>
+<span class="code-line" data-line="9">}</span>
+<span class="code-line" data-line="10"><span class="keyword">const</span> <span class="variable">person</span> = <span class="keyword">new</span> <span class="type">Person</span>(<span class="string">"Alice"</span>, <span class="number">30</span>);</span>
+<span class="code-line" data-line="11"><span class="variable">console</span>.<span class="function">log</span>(<span class="variable">person</span>.<span class="function">greet</span>());</span></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="explanation-section" style="margin-top: 100px; clear: both; position: relative; z-index: 1;">
+                    <h2>Takeaways</h2>
+                    <p>Python and Rust are my favorite. Python is easy to read and write. We can also include some aspects of Rust and Go (like data structure/method separation and type checking) that result in extensible and reliable code.</p>
+
+                    <p>Rust appears pretty intuitive once you understand the structure/method separation concept and I appreciate the requirement for data types when defining a structure without being super verbose as it appears Go requires.</p>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Thomas Wileman. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://github.com/tmwileman">GitHub</a>
+            <a href="https://linkedin.com/in/thomaswileman">LinkedIn</a>
+            <a href="mailto:thomas.wileman@example.com">Email</a>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.dataset.tab;
+
+                // Update active button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Update active tab content
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${targetTab}-tab`).classList.add('active');
+
+                // Reset any active explanations and line highlighting
+                resetHighlighting();
+            });
+        });
+
+        // Line highlighting functionality
+        function highlightLines(lines) {
+            // Reset all line highlighting first
+            document.querySelectorAll('.code-line').forEach(line => {
+                line.classList.remove('highlighted');
+            });
+
+            // Get the currently active tab
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
+            // Highlight specified lines in the active tab
+            lines.forEach(lineNum => {
+                const lineElement = activeTab.querySelector(`[data-line="${lineNum}"]`);
+                if (lineElement) {
+                    lineElement.classList.add('highlighted');
+                }
+            });
+        }
+
+        function resetHighlighting() {
+            // Reset line highlighting
+            document.querySelectorAll('.code-line').forEach(line => {
+                line.classList.remove('highlighted');
+            });
+
+            // Reset explanation highlighting
+            document.querySelectorAll('.explanation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+
+        // Explanation item click handlers
+        document.addEventListener('click', (e) => {
+            const explanationItem = e.target.closest('.explanation-item');
+            if (!explanationItem) return;
+
+            // Reset all explanation items
+            document.querySelectorAll('.explanation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Activate clicked item
+            explanationItem.classList.add('active');
+
+            // Get line numbers to highlight
+            const linesData = explanationItem.dataset.lines;
+            if (linesData) {
+                const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                highlightLines(lines);
+            }
+        });
+
+        // Auto-highlight first explanation item when tab becomes active
+        function activateFirstExplanation() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
+            const firstExplanation = activeTab.querySelector('.explanation-item');
+            if (firstExplanation) {
+                // Reset all first
+                resetHighlighting();
+
+                // Activate first explanation
+                firstExplanation.classList.add('active');
+
+                // Highlight its lines
+                const linesData = firstExplanation.dataset.lines;
+                if (linesData) {
+                    const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                    highlightLines(lines);
+                }
+            }
+        }
+
+        // Initialize first explanation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            activateFirstExplanation();
+        });
+
+        // Re-activate first explanation when tab changes
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Small delay to ensure tab content is visible
+                setTimeout(activateFirstExplanation, 50);
+            });
+        });
+
+        // Create and show tooltip
+        function showTooltip(explanationItem) {
+            console.log('showTooltip called', explanationItem);
+
+            // Remove any existing tooltip
+            const existingTooltip = document.querySelector('.hover-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+
+            const tooltipText = explanationItem.dataset.tooltip;
+            console.log('tooltipText:', tooltipText);
+            if (!tooltipText) return;
+
+            // Get the currently active tab
+            const activeTab = document.querySelector('.tab-content.active');
+            console.log('activeTab:', activeTab);
+            if (!activeTab) return;
+
+            // Get the code panel in the active tab
+            const codePanel = activeTab.querySelector('.code-panel');
+            console.log('codePanel:', codePanel);
+            if (!codePanel) return;
+
+            // Get line numbers to highlight
+            const linesData = explanationItem.dataset.lines;
+            if (!linesData) return;
+
+            const lines = linesData.split(',').map(num => parseInt(num.trim()));
+            console.log('lines:', lines);
+
+            // Find the first highlighted line element
+            const firstLineElement = activeTab.querySelector(`[data-line="${lines[0]}"]`);
+            if (!firstLineElement) return;
+
+            // Create tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.className = 'hover-tooltip show';
+            tooltip.textContent = tooltipText;
+
+            // Add tooltip to code panel (positioned absolutely)
+            codePanel.appendChild(tooltip);
+
+            // Calculate position relative to the highlighted line
+            const lineRect = firstLineElement.getBoundingClientRect();
+            const panelRect = codePanel.getBoundingClientRect();
+
+            // Position relative to the code panel
+            const relativeTop = lineRect.top - panelRect.top;
+            const relativeLeft = lineRect.left - panelRect.left;
+
+            console.log('Line position:', { relativeTop, relativeLeft });
+
+            // First, temporarily add tooltip to measure its actual dimensions
+            tooltip.style.position = 'absolute';
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.top = '0px';
+            tooltip.style.left = '0px';
+
+            // Wait for next frame to get actual dimensions
+            setTimeout(() => {
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const tooltipWidth = tooltipRect.width;
+                const tooltipHeight = tooltipRect.height;
+                const panelWidth = codePanel.offsetWidth;
+                const panelHeight = codePanel.offsetHeight;
+
+                let tooltipClass = '';
+                let top = relativeTop;
+                let left = relativeLeft;
+
+                console.log('Dimensions:', { tooltipWidth, tooltipHeight, panelWidth, panelHeight });
+                console.log('Line position:', { relativeTop, relativeLeft });
+
+                // Try right side first
+                if (relativeLeft + firstLineElement.offsetWidth + tooltipWidth + 30 <= panelWidth) {
+                    tooltipClass = 'left'; // Arrow points left TO the code
+                    left = relativeLeft + firstLineElement.offsetWidth + 15;
+                    top = relativeTop - (tooltipHeight / 2) + (firstLineElement.offsetHeight / 2);
+                }
+                // Try left side
+                else if (relativeLeft - tooltipWidth - 15 >= 0) {
+                    tooltipClass = 'right'; // Arrow points right TO the code
+                    left = relativeLeft - tooltipWidth - 15;
+                    top = relativeTop - (tooltipHeight / 2) + (firstLineElement.offsetHeight / 2);
+                }
+                // Try bottom
+                else if (relativeTop + firstLineElement.offsetHeight + tooltipHeight + 15 <= panelHeight) {
+                    tooltipClass = 'top'; // Arrow points up TO the code
+                    top = relativeTop + firstLineElement.offsetHeight + 15;
+                    left = Math.max(10, Math.min(relativeLeft, panelWidth - tooltipWidth - 10));
+                }
+                // Use top as fallback
+                else {
+                    tooltipClass = 'bottom'; // Arrow points down TO the code
+                    top = relativeTop - tooltipHeight - 15;
+                    left = Math.max(10, Math.min(relativeLeft, panelWidth - tooltipWidth - 10));
+                }
+
+                // Ensure tooltip stays within bounds
+                top = Math.max(10, Math.min(top, panelHeight - tooltipHeight - 10));
+                left = Math.max(10, Math.min(left, panelWidth - tooltipWidth - 10));
+
+                tooltip.className = `hover-tooltip show ${tooltipClass}`;
+                tooltip.style.top = `${top}px`;
+                tooltip.style.left = `${left}px`;
+                tooltip.style.visibility = 'visible';
+
+                console.log('Final positioning:', { tooltipClass, top, left });
+            }, 10);
+        }
+
+        function hideTooltip() {
+            const existingTooltip = document.querySelector('.hover-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+        }
+
+        // Hover effects for explanation items
+        document.addEventListener('mouseenter', (e) => {
+            const explanationItem = e.target.closest('.explanation-item');
+            if (!explanationItem) return;
+
+            // Highlight lines
+            const linesData = explanationItem.dataset.lines;
+            if (linesData) {
+                const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                highlightLines(lines);
+            }
+
+            // Show tooltip
+            showTooltip(explanationItem);
+        }, true);
+
+        document.addEventListener('mouseleave', (e) => {
+            const explanationItem = e.target.closest('.explanation-item');
+            if (!explanationItem) return;
+
+            // Hide tooltip
+            hideTooltip();
+
+            // Restore highlighting to active explanation
+            const activeExplanation = document.querySelector('.explanation-item.active');
+            if (activeExplanation && activeExplanation !== explanationItem) {
+                const linesData = activeExplanation.dataset.lines;
+                if (linesData) {
+                    const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                    highlightLines(lines);
+                } else {
+                    resetHighlighting();
+                    activeExplanation.classList.add('active');
+                }
+            } else if (!activeExplanation) {
+                resetHighlighting();
+            }
+        }, true);
+    </script>
+</body>
+
+</html>
