@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Robust Data Quality Pipelines - Thomas Wileman</title>
+    <meta name="description" content="Practical strategies for implementing data validation, monitoring, and alerting systems in ML pipelines.">
+    <meta name="keywords" content="data quality, data engineering, MLOps, data validation, monitoring">
+    <meta name="author" content="Thomas Wileman">
+
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Thomas Wileman</h1>
+        <p class="tagline">Machine Learning Engineer & Technical Writer</p>
+        <nav>
+            <a href="../../">Home</a>
+            <a href="../" class="active">Blog</a>
+            <a href="../../books/">Book Reviews</a>
+            <a href="../../about/">About</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="back-link">
+            <a href="../">&larr; Back to Blog</a>
+        </div>
+
+        <article class="content-section">
+            <h1>Building Robust Data Quality Pipelines</h1>
+            <div class="post-meta">March 8, 2024 • Data Engineering</div>
+
+            <div class="article-content">
+                <p>In machine learning, the adage "garbage in, garbage out" has never been more relevant. Poor data quality doesn't just lead to bad models—it can completely undermine business decisions and user trust. After years of building and maintaining ML systems in production, I've learned that robust data quality pipelines are not optional; they're the foundation upon which reliable ML systems are built.</p>
+
+                <h2>The Hidden Cost of Poor Data Quality</h2>
+
+                <p>Before diving into solutions, it's worth understanding the real impact of data quality issues:</p>
+
+                <ul>
+                    <li><strong>Model Drift:</strong> Subtle changes in data distribution can slowly degrade model performance</li>
+                    <li><strong>Silent Failures:</strong> Models continue to run but produce increasingly unreliable predictions</li>
+                    <li><strong>Debugging Complexity:</strong> Data issues often manifest as confusing model behavior rather than clear error messages</li>
+                    <li><strong>Cascade Effects:</strong> Upstream data issues can propagate through multiple downstream systems</li>
+                </ul>
+
+                <h2>The Data Quality Framework</h2>
+
+                <p>Effective data quality management requires a systematic approach across multiple dimensions:</p>
+
+                <h3>1. Completeness</h3>
+                <p>Are all expected data points present? Missing data can be more destructive than obvious errors because it's often harder to detect.</p>
+
+                <pre><code>def check_completeness(df, required_columns, threshold=0.95):
+    """Check if required columns meet completeness threshold"""
+    completeness_report = {}
+    for col in required_columns:
+        completion_rate = df[col].notna().mean()
+        completeness_report[col] = {
+            'completion_rate': completion_rate,
+            'passes_threshold': completion_rate >= threshold
+        }
+    return completeness_report</code></pre>
+
+                <h3>2. Validity</h3>
+                <p>Does the data conform to defined formats and constraints? This includes type checking, range validation, and format compliance.</p>
+
+                <h3>3. Consistency</h3>
+                <p>Are there contradictions within the dataset or between related datasets? Consistency checks often reveal integration issues between systems.</p>
+
+                <h3>4. Accuracy</h3>
+                <p>Does the data correctly represent the real-world phenomena it's supposed to capture? This is often the hardest dimension to validate automatically.</p>
+
+                <h2>Implementing Validation Layers</h2>
+
+                <p>A robust data quality pipeline implements validation at multiple layers:</p>
+
+                <h3>Schema Validation</h3>
+                <p>The first line of defense. Use tools like Great Expectations or Pandera to define and enforce schema contracts.</p>
+
+                <pre><code>import pandera as pa
+
+schema = pa.DataFrameSchema({
+    "user_id": pa.Column(pa.String, checks=pa.Check.str_matches(r'user_\d+')),
+    "timestamp": pa.Column(pa.DateTime),
+    "feature_1": pa.Column(pa.Float, checks=pa.Check.between(-1, 1)),
+    "feature_2": pa.Column(pa.Int, checks=pa.Check.greater_than(0))
+})</code></pre>
+
+                <h3>Statistical Validation</h3>
+                <p>Compare current data against historical baselines to detect drift and anomalies.</p>
+
+                <h3>Business Logic Validation</h3>
+                <p>Implement domain-specific rules that capture business understanding of what constitutes valid data.</p>
+
+                <h2>Monitoring and Alerting</h2>
+
+                <p>Validation without proper monitoring is like having a smoke detector without batteries. Your monitoring system should:</p>
+
+                <ul>
+                    <li><strong>Track Trends:</strong> Not just current state, but how quality metrics change over time</li>
+                    <li><strong>Provide Context:</strong> Connect data quality issues to potential upstream causes</li>
+                    <li><strong>Enable Fast Response:</strong> Alert the right people with enough context to take action</li>
+                    <li><strong>Learn from History:</strong> Use past incidents to improve detection and response</li>
+                </ul>
+
+                <h2>Practical Implementation Strategies</h2>
+
+                <h3>Start Small, Think Big</h3>
+                <p>Begin with the most critical data paths and gradually expand coverage. It's better to have robust monitoring on core features than superficial checks everywhere.</p>
+
+                <h3>Make It Part of the Pipeline</h3>
+                <p>Data quality checks should be integrated into your data pipeline, not bolted on as an afterthought. Failed quality checks should halt downstream processing.</p>
+
+                <h3>Embrace False Positives</h3>
+                <p>It's better to investigate a false alarm than to miss a real data quality issue. Tune your thresholds based on operational experience, not theoretical perfection.</p>
+
+                <h2>Tools and Technologies</h2>
+
+                <p>The data quality tooling landscape has matured significantly:</p>
+
+                <ul>
+                    <li><strong>Great Expectations:</strong> Comprehensive data validation and documentation</li>
+                    <li><strong>Pandera:</strong> Lightweight schema validation for pandas DataFrames</li>
+                    <li><strong>dbt:</strong> Data transformation with built-in testing capabilities</li>
+                    <li><strong>Apache Beam:</strong> Scalable data processing with validation capabilities</li>
+                </ul>
+
+                <h2>The Cultural Component</h2>
+
+                <p>Technology alone doesn't solve data quality problems. You need:</p>
+
+                <ul>
+                    <li><strong>Shared Ownership:</strong> Data quality is everyone's responsibility, not just the data team's</li>
+                    <li><strong>Clear Processes:</strong> Well-defined procedures for handling quality issues when they arise</li>
+                    <li><strong>Continuous Improvement:</strong> Regular retrospectives to learn from quality incidents</li>
+                </ul>
+
+                <blockquote>
+                    "The goal isn't perfect data—it's knowing when your data isn't perfect and having systems in place to handle that reality gracefully."
+                </blockquote>
+
+                <h2>Looking Forward</h2>
+
+                <p>As ML systems become more complex and critical to business operations, data quality will only become more important. Investing in robust data quality pipelines early pays dividends throughout the lifecycle of your ML systems.</p>
+
+                <p>The teams that excel at data quality are those that treat it as a product in its own right—with clear ownership, defined SLAs, and continuous investment in improvement. In a world where data drives decisions, data quality isn't just a technical concern—it's a competitive advantage.</p>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Thomas Wileman. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://github.com/tmwileman">GitHub</a>
+            <a href="https://linkedin.com/in/thomaswileman">LinkedIn</a>
+            <a href="mailto:thomas.wileman@example.com">Email</a>
+        </div>
+    </footer>
+</body>
+
+</html>
