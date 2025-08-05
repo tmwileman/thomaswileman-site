@@ -12,8 +12,6 @@ personal-website/
 │   └── posts/              # Individual blog posts
 ├── books/                  # Book reviews section
 │   └── index.html          # Book reviews listing
-├── about/                  # About page
-│   └── index.html
 ├── assets/                 # Static assets
 │   ├── css/
 │   ├── js/

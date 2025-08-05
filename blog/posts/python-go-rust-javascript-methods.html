@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparing Python to Go, Rust, and JavaScript: Object Methods - Thomas Wileman</title>
+    <meta name="description" content="A comparative analysis of object methods in Python, Go, Rust, and JavaScript, exploring getters, setters, and state modification.">
+    <meta name="keywords" content="Python, Go, Rust, JavaScript, programming languages, methods, getters, setters, object-oriented programming">
+    <meta name="author" content="Thomas Wileman">
+
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+        .interactive-comparison {
+            margin: 40px 0 120px 0;
+        }
+
+        .language-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 0;
+            border-bottom: 3px solid #e5e5e5;
+        }
+
+        .tab-button {
+            padding: 15px 25px;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            color: #666;
+            transition: all 0.3s ease;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 3px solid transparent;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom-color: #3498db;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-layout {
+            display: grid;
+            grid-template-rows: auto auto;
+            gap: 0;
+        }
+
+        .explanation-titles {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .titles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .explanation-item {
+            padding: 12px 16px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            text-align: center;
+        }
+
+        .explanation-item:hover {
+            background: #e8f4f8;
+            border-color: #3498db;
+        }
+
+        .explanation-item.active {
+            background: #e8f4f8;
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+        }
+
+        .explanation-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+        }
+
+        .hover-tooltip {
+            position: absolute;
+            background: #2c3e50;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            line-height: 1.4;
+            max-width: 300px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .hover-tooltip::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 8px solid transparent;
+        }
+
+        .hover-tooltip.left::before {
+            top: 50%;
+            right: 100%;
+            transform: translateY(-50%);
+            border-right-color: #2c3e50;
+        }
+
+        .hover-tooltip.right::before {
+            top: 50%;
+            left: 100%;
+            transform: translateY(-50%);
+            border-left-color: #2c3e50;
+        }
+
+        .hover-tooltip.top::before {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: #2c3e50;
+        }
+
+        .hover-tooltip.bottom::before {
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: #2c3e50;
+        }
+
+        .hover-tooltip.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .code-explanation-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            position: relative;
+        }
+
+        .code-panel {
+            background: #f8f9fa;
+            padding: 0;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .code-header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            border-radius: 8px 8px 0 0;
+            letter-spacing: 0.5px;
+        }
+
+        .code-display {
+            padding: 20px;
+            overflow: visible;
+        }
+
+        .code-display pre {
+            margin: 0;
+            font-size: 1.1em;
+            line-height: 1.1;
+            color: #2c3e50;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+
+        .code-display code {
+            background: none;
+            padding: 0;
+        }
+
+        .code-line {
+            display: block;
+            padding: 0;
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+
+        .code-line.highlighted {
+            background: rgba(52, 152, 219, 0.15);
+            border-left: 4px solid #3498db;
+            padding-left: 12px;
+        }
+
+        .explanation-panel {
+            padding: 25px;
+            background: white;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .explanation-panel h4 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .explanation-panel ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+
+        .explanation-panel li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .keyword {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .string {
+            color: #27ae60;
+        }
+
+        .function {
+            color: #3498db;
+        }
+
+        .comment {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .number {
+            color: #f39c12;
+        }
+
+        .type {
+            color: #9b59b6;
+            font-weight: 600;
+        }
+
+        .variable {
+            color: #1a1a1a;
+        }
+
+        @media (max-width: 768px) {
+            .interactive-comparison {
+                margin: 20px 0 60px 0;
+            }
+
+            .tab-button {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+
+            .titles-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Thomas Wileman</h1>
+        <p class="tagline">Machine Learning Engineer & Technical Writer</p>
+        <nav>
+            <a href="../../">Home</a>
+            <a href="../" class="active">Blog</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="back-link">
+            <a href="../">&larr; Back to Blog</a>
+        </div>
+
+        <article class="content-section">
+            <h1>Comparing Python to Go, Rust, and JavaScript: Object Methods</h1>
+            <div class="post-meta">August 4, 2025 • Programming Languages</div>
+
+            <div class="article-content">
+
+                <p>We first examined how Python, Go, Rust, and JavaScript handle class instantiation. The items that stick with me from that assessment were how Rust separates data structures from methods and Go's strict type system.</p>
+
+                <p>In this second look, we'll see how these languages use simple methods to operate on instantiated objects. For each language we'll implement the following types of methods in the Person class we introduced previously:</p>
+
+                <ul>
+                    <li>A getter method that accesses the person's age</li>
+                    <li>A setter method that modifies the person's age</li>
+                    <li>A method that modifies the state of an object by increasing their age</li>
+                </ul>
+
+                <div class="interactive-comparison">
+                    <div class="language-tabs">
+                        <button class="tab-button active" data-tab="python">Python</button>
+                        <button class="tab-button" data-tab="rust">Rust</button>
+                        <button class="tab-button" data-tab="go">Go</button>
+                        <button class="tab-button" data-tab="javascript">JavaScript</button>
+                    </div>
+
+                    <div class="tab-content active" id="python">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="6,7" data-tooltip="Python's getter methods like get_age() provide controlled access to object attributes. While redundant for simple cases (you could access .age directly), getters allow for validation, computed properties, or logging access patterns.">
+                                        <div class="explanation-title">Getter Methods</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="9,10" data-tooltip="Setter methods like set_age() provide controlled modification of object attributes. They enable validation, type checking, or side effects when attributes change, maintaining encapsulation principles.">
+                                        <div class="explanation-title">Setter Methods</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="12,13,14" data-tooltip="Methods that modify object state, like have_birthday(), demonstrate how Python handles mutable objects. The += operator modifies the existing object rather than creating a new one.">
+                                        <div class="explanation-title">State Modification</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="2,3,4" data-tooltip="Python's __init__ method is automatically called during object instantiation. The self parameter refers to the instance being created, and attributes are set using simple assignment.">
+                                        <div class="explanation-title">Object Initialization</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">Python Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">class</span> <span class="type">Person</span>:</span>
+<span class="code-line" data-line="2">    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, <span class="variable">name</span>, <span class="variable">age</span>):</span>
+<span class="code-line" data-line="3">        <span class="variable">self</span>.<span class="variable">name</span> = <span class="variable">name</span></span>
+<span class="code-line" data-line="4">        <span class="variable">self</span>.<span class="variable">age</span> = <span class="variable">age</span></span>
+<span class="code-line" data-line="5">    <span class="comment"># Getter method</span></span>
+<span class="code-line" data-line="6">    <span class="keyword">def</span> <span class="function">get_age</span>(<span class="variable">self</span>):</span>
+<span class="code-line" data-line="7">        <span class="keyword">return</span> <span class="variable">self</span>.<span class="variable">age</span></span>
+<span class="code-line" data-line="8">    <span class="comment"># Setter method</span></span>
+<span class="code-line" data-line="9">    <span class="keyword">def</span> <span class="function">set_age</span>(<span class="variable">self</span>, <span class="variable">new_age</span>):</span>
+<span class="code-line" data-line="10">        <span class="variable">self</span>.<span class="variable">age</span> = <span class="variable">new_age</span></span>
+<span class="code-line" data-line="11">    <span class="comment"># Method that modifies state</span></span>
+<span class="code-line" data-line="12">    <span class="keyword">def</span> <span class="function">have_birthday</span>(<span class="variable">self</span>):</span>
+<span class="code-line" data-line="13">        <span class="variable">self</span>.<span class="variable">age</span> += <span class="number">1</span></span>
+<span class="code-line" data-line="14">        <span class="keyword">return</span> <span class="string">f"Happy birthday! Now I'm {self.age}"</span></span>
+<span class="code-line" data-line="15"><span class="comment"># Usage</span></span>
+<span class="code-line" data-line="16"><span class="variable">person</span> = <span class="type">Person</span>(<span class="string">"Alice"</span>, <span class="number">30</span>)</span>
+<span class="code-line" data-line="17"><span class="function">print</span>(<span class="variable">person</span>.<span class="function">get_age</span>())           <span class="comment"># 30</span></span>
+<span class="code-line" data-line="18"><span class="function">print</span>(<span class="variable">person</span>.<span class="function">have_birthday</span>())     <span class="comment"># Happy birthday! Now I'm 31</span></span>
+<span class="code-line" data-line="19"><span class="variable">person</span>.<span class="function">set_age</span>(<span class="number">25</span>)</span>
+<span class="code-line" data-line="20"><span class="function">print</span>(<span class="variable">person</span>.<span class="function">get_age</span>())           <span class="comment"># 25</span></span></code></pre>
+                                    </div>
+                                </div>
+                                <div class="explanation-panel">
+                                    <h4>Python Analysis</h4>
+                                    <ul>
+                                        <li>The first thing I notice is how clean and readable Python is. The logic behind each method is easily understandable.</li>
+                                        <li>Again, we see that variable types (name and age) don't require data types when defined. Python figures datatypes out at runtime which makes it easier during development but may result in runtime errors that other languages might have caught earlier.</li>
+                                        <li>The setter method, <code>set_age</code>, makes it easy to change the age of an established Person object.</li>
+                                        <li>Similarly, the <code>have_birthday</code> method shows us how easy Python can modify an established state.</li>
+                                        <li>The getter method, <code>get_age</code>, is redundant. We could just reference the age attribute of an instantiated object.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="rust">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="11,12" data-tooltip="Rust's get_age() method uses &self to borrow the instance immutably. This means the method can read data but cannot modify it, enforced at compile time.">
+                                        <div class="explanation-title">Immutable Borrowing (&self)</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="15,16,19,20" data-tooltip="Methods that modify state require &mut self for mutable borrowing. Rust's ownership system prevents data races by ensuring only one mutable reference exists at compile time.">
+                                        <div class="explanation-title">Mutable Borrowing (&mut self)</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="1,2,3,5" data-tooltip="Rust separates data definition (struct) from behavior (impl). This separation allows adding methods to types from different modules and provides clear organization.">
+                                        <div class="explanation-title">Struct/Impl Separation</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="2,3,7,11,15,19" data-tooltip="Rust requires explicit type annotations (String, u32) preventing runtime type errors. All types must be known at compile time for memory safety guarantees.">
+                                        <div class="explanation-title">Explicit Type System</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">Rust Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">struct</span> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="2">    <span class="variable">name</span>: <span class="type">String</span>,</span>
+<span class="code-line" data-line="3">    <span class="variable">age</span>: <span class="type">u32</span>,</span>
+<span class="code-line" data-line="4">}</span>
+<span class="code-line" data-line="5"><span class="keyword">impl</span> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="6">    <span class="comment">// Constructor</span></span>
+<span class="code-line" data-line="7">    <span class="keyword">fn</span> <span class="function">new</span>(<span class="variable">name</span>: <span class="type">String</span>, <span class="variable">age</span>: <span class="type">u32</span>) -> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="8">        <span class="type">Person</span> { <span class="variable">name</span>, <span class="variable">age</span> }</span>
+<span class="code-line" data-line="9">    }</span>
+<span class="code-line" data-line="10">    <span class="comment">// Getter method (borrows self)</span></span>
+<span class="code-line" data-line="11">    <span class="keyword">fn</span> <span class="function">get_age</span>(&<span class="variable">self</span>) -> <span class="type">u32</span> {</span>
+<span class="code-line" data-line="12">        <span class="variable">self</span>.<span class="variable">age</span></span>
+<span class="code-line" data-line="13">    }</span>
+<span class="code-line" data-line="14">    <span class="comment">// Setter method (mutable borrow)</span></span>
+<span class="code-line" data-line="15">    <span class="keyword">fn</span> <span class="function">set_age</span>(&<span class="keyword">mut</span> <span class="variable">self</span>, <span class="variable">new_age</span>: <span class="type">u32</span>) {</span>
+<span class="code-line" data-line="16">        <span class="variable">self</span>.<span class="variable">age</span> = <span class="variable">new_age</span>;</span>
+<span class="code-line" data-line="17">    }</span>
+<span class="code-line" data-line="18">    <span class="comment">// Method that modifies state</span></span>
+<span class="code-line" data-line="19">    <span class="keyword">fn</span> <span class="function">have_birthday</span>(&<span class="keyword">mut</span> <span class="variable">self</span>) -> <span class="type">String</span> {</span>
+<span class="code-line" data-line="20">        <span class="variable">self</span>.<span class="variable">age</span> += <span class="number">1</span>;</span>
+<span class="code-line" data-line="21">        <span class="function">format!</span>(<span class="string">"Happy birthday! Now I'm {}"</span>, <span class="variable">self</span>.<span class="variable">age</span>)</span>
+<span class="code-line" data-line="22">    }</span>
+<span class="code-line" data-line="23">}</span>
+<span class="code-line" data-line="24"><span class="comment">// Usage</span></span>
+<span class="code-line" data-line="25"><span class="keyword">let</span> <span class="keyword">mut</span> <span class="variable">person</span> = <span class="type">Person</span>::<span class="function">new</span>(<span class="string">"Alice"</span>.<span class="function">to_string</span>(), <span class="number">30</span>);</span>
+<span class="code-line" data-line="26"><span class="function">println!</span>(<span class="string">"{}"</span>, <span class="variable">person</span>.<span class="function">get_age</span>());              <span class="comment">// 30</span></span>
+<span class="code-line" data-line="27"><span class="function">println!</span>(<span class="string">"{}"</span>, <span class="variable">person</span>.<span class="function">have_birthday</span>());        <span class="comment">// Happy birthday! Now I'm 31</span></span>
+<span class="code-line" data-line="28"><span class="variable">person</span>.<span class="function">set_age</span>(<span class="number">25</span>);</span>
+<span class="code-line" data-line="29"><span class="function">println!</span>(<span class="string">"{}"</span>, <span class="variable">person</span>.<span class="function">get_age</span>());              <span class="comment">// 25</span></span></code></pre>
+                                    </div>
+                                </div>
+                                <div class="explanation-panel">
+                                    <h4>Rust Analysis</h4>
+                                    <ul>
+                                        <li>Off the bat, the struct/impl pattern separates data definition from behavior. This means that when the code compiles, Rust doesn't have to guess about data types or lookup which function to apply to the object. Datatypes are already resolved and the compiler directly inserts the function call.</li>
+                                        <li>Rust uses <code>&self</code> and <code>&mut self</code> for memory management. <code>&self</code> reads instantiated object data but doesn't change it. <code>&mut self</code> reads and modifies instantiated data. Python doesn't have this. Instead Python uses a garbage collector to track memory. This makes it easy to use but slow. Rust enforces ownership rules at compile time to manage memory.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="go">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="8,9,12,13,16,17,20,21" data-tooltip="Go uses pointer receivers (*Person) for methods that need to modify the struct or avoid copying large structs. The * dereferences the pointer to access field values.">
+                                        <div class="explanation-title">Pointer Receivers (*Person)</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="8,12,16,20" data-tooltip="Go's method receiver syntax (p *Person) attaches methods to types. The receiver comes before the function name, making the method belong to that type.">
+                                        <div class="explanation-title">Method Receivers</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="3,4,5,8,12,16,20,25" data-tooltip="Go requires explicit type declarations for all parameters, return values, and struct fields. This provides compile-time type safety and clear interfaces.">
+                                        <div class="explanation-title">Explicit Typing</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="8,9" data-tooltip="Go constructor functions are conventional (not enforced). NewPerson returns a pointer using &Person{} syntax, allocating memory and returning the address.">
+                                        <div class="explanation-title">Constructor Convention</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">Go Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">package</span> main</span>
+<span class="code-line" data-line="2"><span class="keyword">import</span> <span class="string">"fmt"</span></span>
+<span class="code-line" data-line="3"><span class="keyword">type</span> <span class="type">Person</span> <span class="keyword">struct</span> {</span>
+<span class="code-line" data-line="4">    <span class="variable">Name</span> <span class="type">string</span></span>
+<span class="code-line" data-line="5">    <span class="variable">Age</span>  <span class="type">int</span></span>
+<span class="code-line" data-line="6">}</span>
+<span class="code-line" data-line="7"><span class="comment">// Constructor function</span></span>
+<span class="code-line" data-line="8"><span class="keyword">func</span> <span class="function">NewPerson</span>(<span class="variable">name</span> <span class="type">string</span>, <span class="variable">age</span> <span class="type">int</span>) *<span class="type">Person</span> {</span>
+<span class="code-line" data-line="9">    <span class="keyword">return</span> &<span class="type">Person</span>{<span class="variable">Name</span>: <span class="variable">name</span>, <span class="variable">Age</span>: <span class="variable">age</span>}</span>
+<span class="code-line" data-line="10">}</span>
+<span class="code-line" data-line="11"><span class="comment">// Getter method</span></span>
+<span class="code-line" data-line="12"><span class="keyword">func</span> (<span class="variable">p</span> *<span class="type">Person</span>) <span class="function">GetAge</span>() <span class="type">int</span> {</span>
+<span class="code-line" data-line="13">    <span class="keyword">return</span> <span class="variable">p</span>.<span class="variable">Age</span></span>
+<span class="code-line" data-line="14">}</span>
+<span class="code-line" data-line="15"><span class="comment">// Setter method</span></span>
+<span class="code-line" data-line="16"><span class="keyword">func</span> (<span class="variable">p</span> *<span class="type">Person</span>) <span class="function">SetAge</span>(<span class="variable">newAge</span> <span class="type">int</span>) {</span>
+<span class="code-line" data-line="17">    <span class="variable">p</span>.<span class="variable">Age</span> = <span class="variable">newAge</span></span>
+<span class="code-line" data-line="18">}</span>
+<span class="code-line" data-line="19"><span class="comment">// Method that modifies state</span></span>
+<span class="code-line" data-line="20"><span class="keyword">func</span> (<span class="variable">p</span> *<span class="type">Person</span>) <span class="function">HaveBirthday</span>() <span class="type">string</span> {</span>
+<span class="code-line" data-line="21">    <span class="variable">p</span>.<span class="variable">Age</span>++</span>
+<span class="code-line" data-line="22">    <span class="keyword">return</span> <span class="variable">fmt</span>.<span class="function">Sprintf</span>(<span class="string">"Happy birthday! Now I'm %d"</span>, <span class="variable">p</span>.<span class="variable">Age</span>)</span>
+<span class="code-line" data-line="23">}</span>
+<span class="code-line" data-line="24"><span class="comment">// Usage</span></span>
+<span class="code-line" data-line="25"><span class="keyword">func</span> <span class="function">main</span>() {</span>
+<span class="code-line" data-line="26">    <span class="variable">person</span> := <span class="function">NewPerson</span>(<span class="string">"Alice"</span>, <span class="number">30</span>)</span>
+<span class="code-line" data-line="27">    <span class="variable">fmt</span>.<span class="function">Println</span>(<span class="variable">person</span>.<span class="function">GetAge</span>())           <span class="comment">// 30</span></span>
+<span class="code-line" data-line="28">    <span class="variable">fmt</span>.<span class="function">Println</span>(<span class="variable">person</span>.<span class="function">HaveBirthday</span>())     <span class="comment">// Happy birthday! Now I'm 31</span></span>
+<span class="code-line" data-line="29">    <span class="variable">person</span>.<span class="function">SetAge</span>(<span class="number">25</span>)</span>
+<span class="code-line" data-line="30">    <span class="variable">fmt</span>.<span class="function">Println</span>(<span class="variable">person</span>.<span class="function">GetAge</span>())           <span class="comment">// 25</span></span>
+<span class="code-line" data-line="31">}</span></code></pre>
+                                    </div>
+                                </div>
+                                <div class="explanation-panel">
+                                    <h4>Go Analysis</h4>
+                                    <ul>
+                                        <li>The <code>*Person</code> and <code>&Person</code> give you control over memory. The <code>&</code> means "address of" and allows you to allocate memory. The <code>*</code> means that a function points to a specific Person object.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="javascript">
+                        <div class="content-layout">
+                            <div class="explanation-titles">
+                                <div class="titles-grid">
+                                    <div class="explanation-item" data-lines="7,8,11,12,15,16" data-tooltip="JavaScript methods use 'this' to reference the current instance. The 'this' keyword is dynamically bound based on how the method is called, providing flexibility but potential confusion.">
+                                        <div class="explanation-title">Dynamic 'this' Binding</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="2,3,4" data-tooltip="JavaScript's constructor function is automatically called with 'new'. The constructor sets up the initial state using 'this' to reference the new instance being created.">
+                                        <div class="explanation-title">Constructor Function</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="7,8,11,12" data-tooltip="JavaScript getters and setters provide controlled access to object properties. Unlike Python, these methods are necessary as direct property access doesn't allow for validation or side effects.">
+                                        <div class="explanation-title">Property Access Methods</div>
+                                    </div>
+                                    <div class="explanation-item" data-lines="15,16,17" data-tooltip="JavaScript's template literal syntax uses backticks and ${} for string interpolation. The ++ operator modifies the property in place, similar to Python's += operator.">
+                                        <div class="explanation-title">Template Literals & Mutation</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="code-explanation-grid">
+                                <div class="code-panel">
+                                    <div class="code-header">JavaScript Implementation</div>
+                                    <div class="code-display">
+                                        <pre><code><span class="code-line" data-line="1"><span class="keyword">class</span> <span class="type">Person</span> {</span>
+<span class="code-line" data-line="2">    <span class="function">constructor</span>(<span class="variable">name</span>, <span class="variable">age</span>) {</span>
+<span class="code-line" data-line="3">        <span class="keyword">this</span>.<span class="variable">name</span> = <span class="variable">name</span>;</span>
+<span class="code-line" data-line="4">        <span class="keyword">this</span>.<span class="variable">age</span> = <span class="variable">age</span>;</span>
+<span class="code-line" data-line="5">    }</span>
+<span class="code-line" data-line="6">    <span class="comment">// Getter method</span></span>
+<span class="code-line" data-line="7">    <span class="function">getAge</span>() {</span>
+<span class="code-line" data-line="8">        <span class="keyword">return</span> <span class="keyword">this</span>.<span class="variable">age</span>;</span>
+<span class="code-line" data-line="9">    }</span>
+<span class="code-line" data-line="10">    <span class="comment">// Setter method</span></span>
+<span class="code-line" data-line="11">    <span class="function">setAge</span>(<span class="variable">newAge</span>) {</span>
+<span class="code-line" data-line="12">        <span class="keyword">this</span>.<span class="variable">age</span> = <span class="variable">newAge</span>;</span>
+<span class="code-line" data-line="13">    }</span>
+<span class="code-line" data-line="14">    <span class="comment">// Method that modifies state</span></span>
+<span class="code-line" data-line="15">    <span class="function">haveBirthday</span>() {</span>
+<span class="code-line" data-line="16">        <span class="keyword">this</span>.<span class="variable">age</span>++;</span>
+<span class="code-line" data-line="17">        <span class="keyword">return</span> <span class="string">`Happy birthday! Now I'm ${this.age}`</span>;</span>
+<span class="code-line" data-line="18">    }</span>
+<span class="code-line" data-line="19">}</span>
+<span class="code-line" data-line="20"><span class="comment">// Usage</span></span>
+<span class="code-line" data-line="21"><span class="keyword">const</span> <span class="variable">person</span> = <span class="keyword">new</span> <span class="type">Person</span>(<span class="string">"Alice"</span>, <span class="number">30</span>);</span>
+<span class="code-line" data-line="22"><span class="variable">console</span>.<span class="function">log</span>(<span class="variable">person</span>.<span class="function">getAge</span>());           <span class="comment">// 30</span></span>
+<span class="code-line" data-line="23"><span class="variable">console</span>.<span class="function">log</span>(<span class="variable">person</span>.<span class="function">haveBirthday</span>());     <span class="comment">// Happy birthday! Now I'm 31</span></span>
+<span class="code-line" data-line="24"><span class="variable">person</span>.<span class="function">setAge</span>(<span class="number">25</span>);</span>
+<span class="code-line" data-line="25"><span class="variable">console</span>.<span class="function">log</span>(<span class="variable">person</span>.<span class="function">getAge</span>());           <span class="comment">// 25</span></span></code></pre>
+                                    </div>
+                                </div>
+                                <div class="explanation-panel">
+                                    <h4>JavaScript Analysis</h4>
+                                    <ul>
+                                        <li>Again, the syntax is very similar to Python. No type declarations, OOP class syntax, and easily understandable string handling. Further reading makes it clear that JavaScript is meant for web development. They share similar design philosophies: readable, maintainable code, rapid development support.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h2>Key Takeaways</h2>
+
+                <p>Rust's ownership system, <code>&self</code> and <code>&mut self</code>, and Go's memory pointer system, <code>&Person</code> and <code>*Person</code>, give you explicit control over memory. However they handle data concurrency differently. Rust won't compile if there are type errors or data races. On the other hand Go doesn't prevent a data object from being accessed by two operations at the same time. You have to use additional tools to enforce sequential operations.</p>
+
+                <p>Python and JavaScript employ some of the same philosophies but for different use cases (Python for data applications and JavaScript for web applications).</p>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Thomas Wileman. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://github.com/tmwileman">GitHub</a>
+            <a href="https://linkedin.com/in/thomaswileman">LinkedIn</a>
+            <a href="mailto:thomas.wileman@example.com">Email</a>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked button and corresponding content
+                    button.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+
+                    // Auto-highlight first explanation after tab switch
+                    setTimeout(() => activateFirstExplanation(), 10);
+                });
+            });
+
+            // Initialize first tab
+            activateFirstExplanation();
+        });
+
+        // Highlight specific lines in the active tab's code
+        function highlightLines(lines) {
+            // Get the active tab
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
+            // Reset all code lines in the active tab
+            const codeLines = activeTab.querySelectorAll('.code-line');
+            codeLines.forEach(line => line.classList.remove('highlighted'));
+
+            // Highlight specified lines
+            lines.forEach(lineNum => {
+                const line = activeTab.querySelector(`[data-line="${lineNum}"]`);
+                if (line) {
+                    line.classList.add('highlighted');
+                }
+            });
+        }
+
+        // Reset all highlighting
+        function resetHighlighting() {
+            document.querySelectorAll('.code-line').forEach(line => {
+                line.classList.remove('highlighted');
+            });
+
+            // Reset explanation highlighting
+            document.querySelectorAll('.explanation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+
+        // Explanation item click handlers
+        document.addEventListener('click', (e) => {
+            const explanationItem = e.target.closest('.explanation-item');
+            if (!explanationItem) return;
+
+            // Reset all explanation items
+            document.querySelectorAll('.explanation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Activate clicked item
+            explanationItem.classList.add('active');
+
+            // Highlight corresponding lines
+            const linesData = explanationItem.dataset.lines;
+            if (linesData) {
+                const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                highlightLines(lines);
+            }
+        });
+
+        // Auto-highlight first explanation item when tab becomes active
+        function activateFirstExplanation() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
+            const firstExplanation = activeTab.querySelector('.explanation-item');
+            if (firstExplanation) {
+                // Reset all first
+                resetHighlighting();
+
+                // Activate first explanation
+                firstExplanation.classList.add('active');
+
+                // Highlight its lines
+                const linesData = firstExplanation.dataset.lines;
+                if (linesData) {
+                    const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                    highlightLines(lines);
+                }
+            }
+        }
+
+        // Hover effects for explanation items
+        document.addEventListener('mouseenter', (e) => {
+            const explanationItem = e.target.closest('.explanation-item');
+            if (!explanationItem) return;
+
+            // Highlight lines
+            const linesData = explanationItem.dataset.lines;
+            if (linesData) {
+                const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                highlightLines(lines);
+            }
+
+            // Show tooltip
+            showTooltip(explanationItem);
+        }, true);
+
+        document.addEventListener('mouseleave', (e) => {
+            const explanationItem = e.target.closest('.explanation-item');
+            if (!explanationItem) return;
+
+            // Hide tooltip
+            hideTooltip();
+
+            // Restore highlighting to active explanation
+            const activeExplanation = document.querySelector('.explanation-item.active');
+            if (activeExplanation && activeExplanation !== explanationItem) {
+                const linesData = activeExplanation.dataset.lines;
+                if (linesData) {
+                    const lines = linesData.split(',').map(num => parseInt(num.trim()));
+                    highlightLines(lines);
+                } else {
+                    resetHighlighting();
+                    activeExplanation.classList.add('active');
+                }
+            } else if (!activeExplanation) {
+                resetHighlighting();
+            }
+        }, true);
+
+        function showTooltip(explanationItem) {
+            // Remove any existing tooltip
+            const existingTooltip = document.querySelector('.hover-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+
+            const tooltipText = explanationItem.dataset.tooltip;
+            if (!tooltipText) return;
+
+            // Get the currently active tab
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
+            // Get the code panel in the active tab
+            const codePanel = activeTab.querySelector('.code-panel');
+            if (!codePanel) return;
+
+            // Get line numbers to highlight
+            const linesData = explanationItem.dataset.lines;
+            if (!linesData) return;
+
+            const lines = linesData.split(',').map(num => parseInt(num.trim()));
+
+            // Find the first highlighted line element
+            const firstLineElement = activeTab.querySelector(`[data-line="${lines[0]}"]`);
+            if (!firstLineElement) return;
+
+            // Create tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.className = 'hover-tooltip show';
+            tooltip.textContent = tooltipText;
+
+            // Add tooltip to code panel (positioned absolutely)
+            codePanel.appendChild(tooltip);
+
+            // Calculate position relative to the highlighted line
+            const lineRect = firstLineElement.getBoundingClientRect();
+            const panelRect = codePanel.getBoundingClientRect();
+
+            // Position relative to the code panel
+            const relativeTop = lineRect.top - panelRect.top;
+            const relativeLeft = lineRect.left - panelRect.left;
+
+            // First, temporarily add tooltip to measure its actual dimensions
+            tooltip.style.position = 'absolute';
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.top = '0px';
+            tooltip.style.left = '0px';
+
+            // Wait for next frame to get actual dimensions
+            setTimeout(() => {
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const tooltipWidth = tooltipRect.width;
+                const tooltipHeight = tooltipRect.height;
+                const panelWidth = codePanel.offsetWidth;
+                const panelHeight = codePanel.offsetHeight;
+
+                let tooltipClass = '';
+                let top = relativeTop;
+                let left = relativeLeft;
+
+                // Try right side first
+                if (relativeLeft + firstLineElement.offsetWidth + tooltipWidth + 30 <= panelWidth) {
+                    tooltipClass = 'left'; // Arrow points left TO the code
+                    left = relativeLeft + firstLineElement.offsetWidth + 15;
+                    top = relativeTop - (tooltipHeight / 2) + (firstLineElement.offsetHeight / 2);
+                }
+                // Try left side
+                else if (relativeLeft - tooltipWidth - 15 >= 0) {
+                    tooltipClass = 'right'; // Arrow points right TO the code
+                    left = relativeLeft - tooltipWidth - 15;
+                    top = relativeTop - (tooltipHeight / 2) + (firstLineElement.offsetHeight / 2);
+                }
+                // Try bottom
+                else if (relativeTop + firstLineElement.offsetHeight + tooltipHeight + 15 <= panelHeight) {
+                    tooltipClass = 'top'; // Arrow points up TO the code
+                    top = relativeTop + firstLineElement.offsetHeight + 15;
+                    left = Math.max(10, Math.min(relativeLeft, panelWidth - tooltipWidth - 10));
+                }
+                // Use top as fallback
+                else {
+                    tooltipClass = 'bottom'; // Arrow points down TO the code
+                    top = relativeTop - tooltipHeight - 15;
+                    left = Math.max(10, Math.min(relativeLeft, panelWidth - tooltipWidth - 10));
+                }
+
+                // Ensure tooltip stays within bounds
+                top = Math.max(10, Math.min(top, panelHeight - tooltipHeight - 10));
+                left = Math.max(10, Math.min(left, panelWidth - tooltipWidth - 10));
+
+                tooltip.className = `hover-tooltip show ${tooltipClass}`;
+                tooltip.style.top = `${top}px`;
+                tooltip.style.left = `${left}px`;
+                tooltip.style.visibility = 'visible';
+            }, 10);
+        }
+
+        function hideTooltip() {
+            const existingTooltip = document.querySelector('.hover-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+        }
+    </script>
+</body>
+
+</html>
